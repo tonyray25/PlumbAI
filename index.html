@@ -474,12 +474,14 @@
         }
 
         .section-canvas {
-            height: 450px;
+            height: 100vh;
             position: relative;
-            border-radius: 16px;
+            border-radius: 0;
             overflow: hidden;
             background: rgba(20, 20, 24, 0.5);
-            border: 1px solid var(--border);
+            border: none;
+            width: 100%;
+            max-width: none;
         }
 
         .section-canvas canvas {
@@ -819,6 +821,22 @@
             padding: 2rem;
         }
 
+        /* Remove constraints for full-height 3D canvas */
+        .tech-stack:has(#process-canvas) {
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            margin: 0 calc(-50vw + 50%);
+            width: 100vw;
+            max-width: 100vw;
+        }
+
+        .tech-stack:has(#process-canvas) .tech-stack-header,
+        .tech-stack:has(#process-canvas) .tech-security {
+            padding: 0 2rem;
+        }
+
         .tech-stack-header {
             display: flex;
             justify-content: space-between;
@@ -928,6 +946,8 @@
         /* Risk Vectors Section */
         .vectors {
             background: var(--black);
+            position: relative;
+            overflow: hidden;
         }
 
         .vectors-grid {
@@ -990,6 +1010,8 @@
         /* Legislative Section */
         .legislative {
             background: var(--black-light);
+            position: relative;
+            overflow: hidden;
         }
 
         .legislative-content {
@@ -1099,6 +1121,7 @@
         .case-study {
             background: var(--black);
             position: relative;
+            overflow: hidden;
         }
 
         .case-study-card {
@@ -1245,6 +1268,8 @@
         /* Pricing Section */
         .pricing {
             background: var(--black-light);
+            position: relative;
+            overflow: hidden;
         }
 
         .pricing-grid {
@@ -1613,7 +1638,7 @@
             }
 
             .section-canvas {
-                height: 300px;
+                height: 100vh;
                 order: -1;
             }
 
@@ -2058,7 +2083,7 @@
                     <h4>Under the Hood</h4>
                     <div class="tech-stack-badge">Local Processing</div>
                 </div>
-                <div class="section-canvas" id="process-canvas" style="height: 320px; border: none; background: transparent;"></div>
+                <div class="section-canvas" id="process-canvas" style="height: 100vh; border: none; background: transparent;"></div>
                 <div class="tech-security">
                     <div class="security-badge">
                         <span class="icon">✓</span> APFS Encrypted
@@ -2076,14 +2101,15 @@
 
     <!-- Risk Vectors Section -->
     <section class="vectors" id="vectors">
-        <div class="section-header centered reveal">
+        <div class="section-canvas" id="vectors-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; opacity: 0.15;"></div>
+        <div class="section-header centered reveal" style="position: relative; z-index: 1;">
             <div class="section-tag">Risk Vectors</div>
             <h2 class="section-title">20+ terms scanned on every bid.</h2>
             <p class="section-description">
                 Comprehensive analysis of the contract provisions most likely to impact your bottom line.
             </p>
         </div>
-        <div class="vectors-grid reveal">
+        <div class="vectors-grid reveal" style="position: relative; z-index: 1;">
             <div class="vector-item">
                 <div class="vector-number">01</div>
                 <div class="vector-name">Liquidated Damages</div>
@@ -2189,14 +2215,15 @@
 
     <!-- Legislative Section -->
     <section class="legislative" id="legislative">
-        <div class="section-header reveal">
+        <div class="section-canvas" id="legislative-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; opacity: 0.12;"></div>
+        <div class="section-header reveal" style="position: relative; z-index: 1;">
             <div class="section-tag">2025 Updates</div>
             <h2 class="section-title">Texas legislative changes we're monitoring.</h2>
             <p class="section-description">
                 New laws effective in 2025 that directly impact construction contract enforcement and subcontractor rights.
             </p>
         </div>
-        <div class="legislative-content">
+        <div class="legislative-content" style="position: relative; z-index: 1;">
             <div class="bills-list reveal">
                 <div class="bill-card">
                     <div class="bill-number">SB 841</div>
@@ -2247,14 +2274,15 @@
 
     <!-- Case Study Section -->
     <section class="case-study" id="case-study">
-        <div class="section-header centered reveal">
+        <div class="section-canvas" id="case-study-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; opacity: 0.1;"></div>
+        <div class="section-header centered reveal" style="position: relative; z-index: 1;">
             <div class="section-tag">Real Finding</div>
             <h2 class="section-title">Caught before it cost $120,000.</h2>
             <p class="section-description">
                 Example of a scope conflict our analysis identified on a recent DFW school district project.
             </p>
         </div>
-        <div class="case-study-card reveal">
+        <div class="case-study-card reveal" style="position: relative; z-index: 1;">
             <div class="case-study-header">
                 <div class="case-study-type">
                     <span>●</span> Scope Conflict Identified
@@ -2294,14 +2322,15 @@
 
     <!-- Pricing Section -->
     <section class="pricing" id="pricing">
-        <div class="section-header centered reveal">
+        <div class="section-canvas" id="pricing-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; opacity: 0.08;"></div>
+        <div class="section-header centered reveal" style="position: relative; z-index: 1;">
             <div class="section-tag">Pricing</div>
             <h2 class="section-title">Protect your margins.</h2>
             <p class="section-description">
                 One caught clause pays for a year of service. Choose the plan that fits your bid volume.
             </p>
         </div>
-        <div class="pricing-grid">
+        <div class="pricing-grid" style="position: relative; z-index: 1;">
             <div class="pricing-card">
                 <div class="pricing-header">
                     <div class="pricing-name">Spot Check</div>
@@ -2647,11 +2676,11 @@
                 containerId: 'process-canvas',
                 isWorkflowScene: true,  // Flag to use custom workflow scene
                 modelPaths: {
-                    binder: 'document_ring_binder.glb',
-                    quantum: 'quantum_knot.glb',
-                    server: 'server_racking_system.glb'
+                    binder: 'models/document_ring_binder.glb',
+                    quantum: 'models/quantum_knot.glb',
+                    server: 'models/server_racking_system.glb'
                 },
-                cameraDistance: 8,
+                cameraDistance: 4,  // Much closer camera for larger models
                 cameraSpeed: 0.0002,
                 modelRotation: 0,  // Individual rotation handled per model
                 modelScale: 1.0,
@@ -2661,6 +2690,62 @@
                 directionalIntensity: 0.8,
                 floatAmplitude: 0,
                 floatSpeed: 0
+            },
+            vectors: {
+                containerId: 'vectors-canvas',
+                modelPath: 'models/server_racking_system.glb',
+                cameraDistance: 6,
+                cameraSpeed: 0.0003,
+                modelRotation: 0.0005,
+                modelScale: 2.0,
+                modelPosition: [0, 0, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.4,
+                directionalIntensity: 0.6,
+                floatAmplitude: 0.3,
+                floatSpeed: 0.5
+            },
+            legislative: {
+                containerId: 'legislative-canvas',
+                modelPath: 'models/document_ring_binder.glb',
+                cameraDistance: 5,
+                cameraSpeed: 0.0002,
+                modelRotation: 0.0003,
+                modelScale: 2.5,
+                modelPosition: [0, 0, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.5,
+                directionalIntensity: 0.7,
+                floatAmplitude: 0.2,
+                floatSpeed: 0.4
+            },
+            caseStudy: {
+                containerId: 'case-study-canvas',
+                modelPath: 'models/quantum_knot.glb',
+                cameraDistance: 7,
+                cameraSpeed: 0.00025,
+                modelRotation: 0.0006,
+                modelScale: 2.2,
+                modelPosition: [0, 0, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.3,
+                directionalIntensity: 0.5,
+                floatAmplitude: 0.4,
+                floatSpeed: 0.6
+            },
+            pricing: {
+                containerId: 'pricing-canvas',
+                modelPath: 'models/document_ring_binder.glb',
+                cameraDistance: 6.5,
+                cameraSpeed: 0.00015,
+                modelRotation: 0.0002,
+                modelScale: 1.8,
+                modelPosition: [0, 0, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.4,
+                directionalIntensity: 0.6,
+                floatAmplitude: 0.25,
+                floatSpeed: 0.3
             }
         };
 
@@ -2850,17 +2935,17 @@
                     (gltf) => {
                         const binder = gltf.scene;
 
-                        // Center and scale
+                        // Center and scale - much larger for readability
                         const box = new THREE.Box3().setFromObject(binder);
                         const center = box.getCenter(new THREE.Vector3());
                         const size = box.getSize(new THREE.Vector3());
                         const maxDim = Math.max(size.x, size.y, size.z);
-                        const scale = 1.2 / maxDim;
+                        const scale = 5.0 / maxDim;  // 4x larger - pages should be readable
 
                         binder.scale.setScalar(scale);
                         binder.position.sub(center.multiplyScalar(scale));
-                        binder.position.set(-3.5, 0, 0);
-                        binder.rotation.y = Math.PI * 0.15;
+                        binder.position.set(-2.8, 0, 0);  // Adjusted position for larger size
+                        binder.rotation.y = Math.PI * 0.1;  // Slight angle for better view
 
                         this.workflowModels.binder = binder;
                         group.add(binder);
@@ -2879,12 +2964,12 @@
                     (gltf) => {
                         const quantum = gltf.scene;
 
-                        // Center and scale
+                        // Center and scale - largest model as centerpiece
                         const box = new THREE.Box3().setFromObject(quantum);
                         const center = box.getCenter(new THREE.Vector3());
                         const size = box.getSize(new THREE.Vector3());
                         const maxDim = Math.max(size.x, size.y, size.z);
-                        const scale = 1.5 / maxDim;
+                        const scale = 6.0 / maxDim;  // 4x larger - prominent centerpiece
 
                         quantum.scale.setScalar(scale);
                         quantum.position.sub(center.multiplyScalar(scale));
@@ -2909,17 +2994,17 @@
                     (gltf) => {
                         const server = gltf.scene;
 
-                        // Center and scale
+                        // Center and scale - much larger
                         const box = new THREE.Box3().setFromObject(server);
                         const center = box.getCenter(new THREE.Vector3());
                         const size = box.getSize(new THREE.Vector3());
                         const maxDim = Math.max(size.x, size.y, size.z);
-                        const scale = 1.3 / maxDim;
+                        const scale = 4.5 / maxDim;  // 3.5x larger
 
                         server.scale.setScalar(scale);
                         server.position.sub(center.multiplyScalar(scale));
-                        server.position.set(3.5, 0, 0);
-                        server.rotation.y = -Math.PI * 0.15;
+                        server.position.set(2.8, 0, 0);  // Adjusted position for larger size
+                        server.rotation.y = -Math.PI * 0.1;  // Slight angle for better view
 
                         this.workflowModels.server = server;
                         group.add(server);
@@ -2938,9 +3023,9 @@
             }
 
             finalizeWorkflowScene(group) {
-                // Create particle streams for data flow
-                this.createDataStream(group, -3.5, 0, 0, -1.5);  // Binder to Quantum
-                this.createDataStream(group, 1.5, 0, 3.5, 0);    // Quantum to Server
+                // Create particle streams for data flow (adjusted for larger models)
+                this.createDataStream(group, -2.8, 0, 0, -1.2);  // Binder to Quantum
+                this.createDataStream(group, 1.2, 0, 2.8, 0);    // Quantum to Server
                 console.log('Workflow scene fully loaded');
             }
 

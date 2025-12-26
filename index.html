@@ -2645,15 +2645,20 @@
             },
             process: {
                 containerId: 'process-canvas',
-                modelPath: 'public/3d/construction_site_collection.glb',
-                cameraDistance: 32,
-                cameraSpeed: 0.00025,
-                modelRotation: 0.0004,
-                modelScale: 0.55,
-                modelPosition: [0, -3.5, 0],
+                isWorkflowScene: true,  // Flag to use custom workflow scene
+                modelPaths: {
+                    binder: 'document_ring_binder.glb',
+                    quantum: 'quantum_knot.glb',
+                    server: 'server_racking_system.glb'
+                },
+                cameraDistance: 8,
+                cameraSpeed: 0.0002,
+                modelRotation: 0,  // Individual rotation handled per model
+                modelScale: 1.0,
+                modelPosition: [0, 0, 0],
                 animationSpeed: 1.0,
-                ambientIntensity: 0.95,
-                directionalIntensity: 1.05,
+                ambientIntensity: 0.6,
+                directionalIntensity: 0.8,
                 floatAmplitude: 0,
                 floatSpeed: 0
             }
@@ -2717,31 +2722,69 @@
             }
 
             addLighting() {
-                // Hemisphere light
-                const hemiLight = new THREE.HemisphereLight(
-                    0xffffff,
-                    0x444444,
-                    this.config.ambientIntensity
-                );
-                hemiLight.position.set(0, 20, 0);
-                this.scene.add(hemiLight);
+                // Check if workflow scene for custom lighting
+                if (this.config.isWorkflowScene) {
+                    // Darker ambient for industrial feel
+                    const ambient = new THREE.AmbientLight(0x404060, 0.4);
+                    this.scene.add(ambient);
 
-                // Directional light
-                const dirLight = new THREE.DirectionalLight(
-                    0xffffff,
-                    this.config.directionalIntensity
-                );
-                dirLight.position.set(5, 5, 5);
-                dirLight.castShadow = false;
-                this.scene.add(dirLight);
+                    // Spotlights on each model position
+                    const leftSpot = new THREE.SpotLight(0x6090ff, 0.8, 10, Math.PI / 6, 0.5, 2);
+                    leftSpot.position.set(-3.5, 3, 3);
+                    leftSpot.target.position.set(-3.5, 0, 0);
+                    this.scene.add(leftSpot);
+                    this.scene.add(leftSpot.target);
 
-                // Additional fill light
-                const fillLight = new THREE.DirectionalLight(0xf0a500, 0.3);
-                fillLight.position.set(-5, 0, -5);
-                this.scene.add(fillLight);
+                    const centerSpot = new THREE.SpotLight(0xf0a500, 1.2, 10, Math.PI / 5, 0.3, 2);
+                    centerSpot.position.set(0, 3.5, 3);
+                    centerSpot.target.position.set(0, 0, 0);
+                    this.scene.add(centerSpot);
+                    this.scene.add(centerSpot.target);
+
+                    const rightSpot = new THREE.SpotLight(0x60ff90, 0.8, 10, Math.PI / 6, 0.5, 2);
+                    rightSpot.position.set(3.5, 3, 3);
+                    rightSpot.target.position.set(3.5, 0, 0);
+                    this.scene.add(rightSpot);
+                    this.scene.add(rightSpot.target);
+
+                    // Rim light from behind
+                    const rimLight = new THREE.DirectionalLight(0x4080c0, 0.3);
+                    rimLight.position.set(0, 2, -5);
+                    this.scene.add(rimLight);
+                } else {
+                    // Standard lighting for other scenes
+                    // Hemisphere light
+                    const hemiLight = new THREE.HemisphereLight(
+                        0xffffff,
+                        0x444444,
+                        this.config.ambientIntensity
+                    );
+                    hemiLight.position.set(0, 20, 0);
+                    this.scene.add(hemiLight);
+
+                    // Directional light
+                    const dirLight = new THREE.DirectionalLight(
+                        0xffffff,
+                        this.config.directionalIntensity
+                    );
+                    dirLight.position.set(5, 5, 5);
+                    dirLight.castShadow = false;
+                    this.scene.add(dirLight);
+
+                    // Additional fill light
+                    const fillLight = new THREE.DirectionalLight(0xf0a500, 0.3);
+                    fillLight.position.set(-5, 0, -5);
+                    this.scene.add(fillLight);
+                }
             }
 
             loadModel() {
+                // Check if this is a custom workflow scene
+                if (this.config.isWorkflowScene) {
+                    this.createWorkflowScene();
+                    return;
+                }
+
                 // Try to load GLB model
                 const loader = new THREE.GLTFLoader();
 
@@ -2792,6 +2835,142 @@
                         this.createFallbackScene();
                     }
                 );
+            }
+
+            createWorkflowScene() {
+                // Create a container for the entire workflow scene
+                const group = new THREE.Group();
+                this.workflowModels = { binder: null, quantum: null, server: null };
+                this.modelsLoaded = 0;
+                const loader = new THREE.GLTFLoader();
+
+                // Load binder (left - document input)
+                loader.load(
+                    this.config.modelPaths.binder,
+                    (gltf) => {
+                        const binder = gltf.scene;
+
+                        // Center and scale
+                        const box = new THREE.Box3().setFromObject(binder);
+                        const center = box.getCenter(new THREE.Vector3());
+                        const size = box.getSize(new THREE.Vector3());
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const scale = 1.2 / maxDim;
+
+                        binder.scale.setScalar(scale);
+                        binder.position.sub(center.multiplyScalar(scale));
+                        binder.position.set(-3.5, 0, 0);
+                        binder.rotation.y = Math.PI * 0.15;
+
+                        this.workflowModels.binder = binder;
+                        group.add(binder);
+                        this.modelsLoaded++;
+                        console.log(`Loaded binder: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}`);
+
+                        if (this.modelsLoaded === 3) this.finalizeWorkflowScene(group);
+                    },
+                    undefined,
+                    (error) => console.error('Error loading binder:', error)
+                );
+
+                // Load quantum knot (center - AI processing)
+                loader.load(
+                    this.config.modelPaths.quantum,
+                    (gltf) => {
+                        const quantum = gltf.scene;
+
+                        // Center and scale
+                        const box = new THREE.Box3().setFromObject(quantum);
+                        const center = box.getCenter(new THREE.Vector3());
+                        const size = box.getSize(new THREE.Vector3());
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const scale = 1.5 / maxDim;
+
+                        quantum.scale.setScalar(scale);
+                        quantum.position.sub(center.multiplyScalar(scale));
+                        quantum.position.set(0, 0, 0);
+                        quantum.userData.isQuantumKnot = true;
+                        quantum.userData.baseScale = scale;
+
+                        this.workflowModels.quantum = quantum;
+                        group.add(quantum);
+                        this.modelsLoaded++;
+                        console.log(`Loaded quantum knot: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}`);
+
+                        if (this.modelsLoaded === 3) this.finalizeWorkflowScene(group);
+                    },
+                    undefined,
+                    (error) => console.error('Error loading quantum knot:', error)
+                );
+
+                // Load server rack (right - results/storage)
+                loader.load(
+                    this.config.modelPaths.server,
+                    (gltf) => {
+                        const server = gltf.scene;
+
+                        // Center and scale
+                        const box = new THREE.Box3().setFromObject(server);
+                        const center = box.getCenter(new THREE.Vector3());
+                        const size = box.getSize(new THREE.Vector3());
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const scale = 1.3 / maxDim;
+
+                        server.scale.setScalar(scale);
+                        server.position.sub(center.multiplyScalar(scale));
+                        server.position.set(3.5, 0, 0);
+                        server.rotation.y = -Math.PI * 0.15;
+
+                        this.workflowModels.server = server;
+                        group.add(server);
+                        this.modelsLoaded++;
+                        console.log(`Loaded server: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}`);
+
+                        if (this.modelsLoaded === 3) this.finalizeWorkflowScene(group);
+                    },
+                    undefined,
+                    (error) => console.error('Error loading server:', error)
+                );
+
+                // Store group reference
+                this.model = group;
+                this.scene.add(group);
+            }
+
+            finalizeWorkflowScene(group) {
+                // Create particle streams for data flow
+                this.createDataStream(group, -3.5, 0, 0, -1.5);  // Binder to Quantum
+                this.createDataStream(group, 1.5, 0, 3.5, 0);    // Quantum to Server
+                console.log('Workflow scene fully loaded');
+            }
+
+            createDataStream(group, startX, startZ, endX, endZ) {
+                // Create flowing particles between two points
+                const particleCount = 40;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const geometry = new THREE.SphereGeometry(0.02, 8, 8);
+                    const material = new THREE.MeshBasicMaterial({
+                        color: i % 3 === 0 ? 0xf0a500 : 0x3b82f6,  // Amber and blue
+                        transparent: true,
+                        opacity: 0
+                    });
+                    const particle = new THREE.Mesh(geometry, material);
+
+                    particle.userData = {
+                        isDataParticle: true,
+                        progress: Math.random(),
+                        speed: 0.003 + Math.random() * 0.004,
+                        startX: startX,
+                        startZ: startZ,
+                        endX: endX,
+                        endZ: endZ,
+                        yOffset: (Math.random() - 0.5) * 0.4,
+                        zVariation: (Math.random() - 0.5) * 0.3
+                    };
+
+                    group.add(particle);
+                }
             }
 
             createFallbackScene() {
@@ -3134,6 +3313,39 @@
                         child.position.y = child.userData.yOffset + Math.sin(p * Math.PI * 3) * 0.15;
                         child.position.z = child.userData.zOffset + Math.sin(p * Math.PI * 2) * 0.2;
                         child.material.opacity = Math.sin(p * Math.PI) * 0.7;
+                    }
+
+                    // === WORKFLOW SCENE ANIMATIONS ===
+                    // Animate quantum knot (rotation and pulsing)
+                    if (child.userData.isQuantumKnot) {
+                        child.rotation.x = time * 0.4;
+                        child.rotation.y = time * 0.5;
+                        child.rotation.z = time * 0.2;
+
+                        // Pulsing scale effect
+                        const baseScale = child.userData.baseScale || 1;
+                        const pulse = 1 + Math.sin(time * 1.5) * 0.08;
+                        child.scale.setScalar(baseScale * pulse);
+                    }
+
+                    // Animate data flow particles
+                    if (child.userData.isDataParticle) {
+                        child.userData.progress += child.userData.speed;
+                        if (child.userData.progress > 1) child.userData.progress = 0;
+
+                        const p = child.userData.progress;
+                        const startX = child.userData.startX;
+                        const endX = child.userData.endX;
+                        const startZ = child.userData.startZ;
+                        const endZ = child.userData.endZ;
+
+                        // Linear interpolation with sine wave for smooth flow
+                        child.position.x = startX + (endX - startX) * p;
+                        child.position.z = startZ + (endZ - startZ) * p + child.userData.zVariation * Math.sin(p * Math.PI * 2);
+                        child.position.y = child.userData.yOffset + Math.sin(p * Math.PI * 2) * 0.2;
+
+                        // Fade in and out
+                        child.material.opacity = Math.sin(p * Math.PI) * 0.8;
                     }
                 });
             }

@@ -1,0 +1,3203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumb | AI-Powered Contract Analysis for DFW Subcontractors</title>
+    <meta name="description" content="AI-powered contract analysis for electrical, plumbing, and HVAC subcontractors in Dallas-Fort Worth. Find hidden risks before you sign.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="apple-touch-icon" href="images/favicon.png">
+    <!-- Three.js and GSAP for 3D graphics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        :root {
+            --black: #08080a;
+            --black-light: #0d0d10;
+            --surface: #141418;
+            --surface-elevated: #1a1a1f;
+            --border: #262630;
+            --border-light: #32323e;
+            --text-primary: #f5f5f7;
+            --text-secondary: #9898a6;
+            --text-muted: #5c5c6d;
+            --amber: #f0a500;
+            --amber-dim: #c48800;
+            --amber-glow: rgba(240, 165, 0, 0.15);
+            --amber-glow-strong: rgba(240, 165, 0, 0.3);
+            --red: #ef4444;
+            --green: #22c55e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--black);
+            color: var(--text-secondary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .serif {
+            font-family: 'Instrument Serif', Georgia, serif;
+        }
+
+        /* Noise Texture Overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        /* Animated Grid Pattern Background */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 3rem;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1.25rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(180deg, var(--black) 0%, transparent 100%);
+            transition: all 0.4s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(8, 8, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 3rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-img {
+            height: 36px;
+            width: auto;
+            transition: opacity 0.3s ease;
+        }
+
+        .logo:hover .logo-img {
+            opacity: 0.9;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--amber);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--amber) 0%, var(--amber-dim) 100%);
+            color: var(--black);
+            box-shadow: 0 4px 20px var(--amber-glow);
+        }
+
+        .nav-links .btn-primary {
+            color: #000000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--amber-glow-strong);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--amber);
+            background: var(--surface-elevated);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-ghost:hover {
+            color: var(--amber);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 7rem 3rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .hero-canvas-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .hero-glow {
+            position: absolute;
+            top: 15%;
+            right: 5%;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, var(--amber-glow) 0%, transparent 70%);
+            filter: blur(100px);
+            pointer-events: none;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        .hero-glow-secondary {
+            position: absolute;
+            bottom: 10%;
+            left: 10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(240, 165, 0, 0.08) 0%, transparent 70%);
+            filter: blur(80px);
+            pointer-events: none;
+            animation: pulse 12s ease-in-out infinite reverse;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.1); }
+        }
+
+        .hero-content {
+            max-width: 1000px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        .hero-badge .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--amber);
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.75rem, 7vw, 5rem);
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.25rem;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s ease forwards 0.1s;
+        }
+
+        .hero h1 .serif {
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .hero h1 .highlight {
+            color: var(--amber);
+            position: relative;
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s ease forwards 0.2s;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s ease forwards 0.3s;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            padding: 2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s ease forwards 0.4s;
+            max-width: 900px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            text-align: center;
+            padding: 0 1rem;
+            border-right: 1px solid var(--border);
+        }
+
+        .stat:last-child {
+            border-right: none;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .stat-value span {
+            color: var(--amber);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Section Styles */
+        section {
+            padding: 6rem 3rem;
+            position: relative;
+        }
+
+        .section-header {
+            max-width: 700px;
+            margin-bottom: 3rem;
+        }
+
+        .section-header.centered {
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--amber);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-tag::before {
+            content: '';
+            width: 20px;
+            height: 1px;
+            background: var(--amber);
+        }
+
+        .section-header.centered .section-tag::before {
+            display: none;
+        }
+
+        .section-title {
+            font-size: clamp(1.75rem, 4vw, 2.75rem);
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-description {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* Three.js Canvas Containers */
+        .section-with-3d {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-3d-content {
+            max-width: 600px;
+        }
+
+        .section-3d-content .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-canvas {
+            height: 450px;
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(20, 20, 24, 0.5);
+            border: 1px solid var(--border);
+        }
+
+        .section-canvas canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Problem Section */
+        .problem {
+            background: var(--black-light);
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+
+        .problem-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .problem-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .problem-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .problem-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .problem-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--amber-glow);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .problem-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0;
+            line-height: 1.3;
+        }
+
+        .problem-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .problem-stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--red);
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Competitive Moat Section */
+        .moat {
+            background: var(--black);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .moat-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, var(--amber-glow) 0%, transparent 70%);
+            filter: blur(120px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .moat-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .moat-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .moat-feature {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .moat-feature:hover {
+            border-color: var(--amber);
+            transform: translateY(-2px);
+        }
+
+        .moat-feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .moat-feature h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .moat-feature p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .knowledge-graph {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .knowledge-graph-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .knowledge-graph-header h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .knowledge-graph-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--green);
+            background: rgba(34, 197, 94, 0.15);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .graph-visual {
+            height: 280px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .graph-node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: var(--surface-elevated);
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .graph-node:hover {
+            border-color: var(--amber);
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .graph-node.central {
+            width: 80px;
+            height: 80px;
+            background: var(--amber);
+            color: var(--black);
+            font-weight: 700;
+            font-size: 0.75rem;
+            border: none;
+            box-shadow: 0 0 40px var(--amber-glow-strong);
+        }
+
+        .graph-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, var(--amber-glow), var(--border));
+            transform-origin: left center;
+        }
+
+        .graph-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .graph-stat {
+            text-align: center;
+        }
+
+        .graph-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--amber);
+        }
+
+        .graph-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Process Section */
+        .process {
+            background: var(--black-light);
+        }
+
+        .process-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: start;
+        }
+
+        .process-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .process-step {
+            display: grid;
+            grid-template-columns: 50px 1fr;
+            gap: 1.5rem;
+            padding: 1.75rem 0;
+            border-bottom: 1px solid var(--border);
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.6s ease;
+        }
+
+        .process-step.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .process-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            width: 44px;
+            height: 44px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--amber);
+            transition: all 0.3s ease;
+        }
+
+        .process-step:hover .step-number {
+            background: var(--amber);
+            color: var(--black);
+            border-color: var(--amber);
+            box-shadow: 0 0 30px var(--amber-glow);
+        }
+
+        .step-content h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.35rem;
+        }
+
+        .step-content p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .tech-stack {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .tech-stack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tech-stack-header h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tech-stack-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--amber);
+            background: var(--amber-glow);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tech-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .tech-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--black-light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover {
+            border-color: var(--border-light);
+        }
+
+        .tech-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--surface-elevated);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .tech-info {
+            flex: 1;
+        }
+
+        .tech-info h5 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.15rem;
+        }
+
+        .tech-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .tech-arrow {
+            display: flex;
+            justify-content: center;
+            padding: 0.5rem 0;
+            color: var(--amber);
+            font-size: 1.25rem;
+        }
+
+        .tech-security {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: var(--black);
+            padding: 0.35rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .security-badge .icon {
+            color: var(--green);
+        }
+
+        /* Risk Vectors Section */
+        .vectors {
+            background: var(--black);
+        }
+
+        .vectors-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .vector-item {
+            background: var(--surface);
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .vector-item:hover {
+            background: var(--surface-elevated);
+        }
+
+        .vector-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: var(--amber);
+            transition: height 0.3s ease;
+        }
+
+        .vector-item:hover::before {
+            height: 60%;
+        }
+
+        .vector-number {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+            font-weight: 600;
+        }
+
+        .vector-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .vector-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Legislative Section */
+        .legislative {
+            background: var(--black-light);
+        }
+
+        .legislative-content {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .bills-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .bill-card {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1.25rem;
+            align-items: start;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .bill-card:hover {
+            border-color: var(--border-light);
+            transform: translateX(4px);
+        }
+
+        .bill-number {
+            background: var(--amber-glow);
+            color: var(--amber);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.35rem 0.6rem;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .bill-info h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .bill-info p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .bill-date {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .legislative-sidebar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+        }
+
+        .legislative-sidebar h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legislative-sidebar h4 .icon {
+            color: var(--amber);
+        }
+
+        .legislative-sidebar p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+
+        .monitored-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .monitored-item {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: var(--black);
+            padding: 0.35rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        /* Case Study Section */
+        .case-study {
+            background: var(--black);
+            position: relative;
+        }
+
+        .case-study-card {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, var(--surface) 0%, var(--surface-elevated) 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .case-study-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2rem;
+            background: var(--black);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .case-study-type {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--amber);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .case-study-project {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .case-study-content {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 3rem;
+            padding: 2rem;
+        }
+
+        .finding-section h4 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .finding-quote {
+            background: var(--black);
+            border-left: 3px solid var(--red);
+            padding: 1.25rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .finding-quote p {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        .finding-specs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .spec-tag {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.75rem;
+            background: var(--black);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .spec-tag.conflict {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .spec-tag .icon {
+            font-size: 0.9rem;
+        }
+
+        .finding-resolution h5 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--green);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .finding-resolution p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .case-study-result {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1.5rem 2rem;
+            background: var(--amber-glow);
+            border-radius: 12px;
+            min-width: 180px;
+        }
+
+        .result-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--amber);
+            line-height: 1;
+            margin-bottom: 0.35rem;
+        }
+
+        .result-context {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Pricing Section */
+        .pricing {
+            background: var(--black-light);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pricing-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--amber);
+            box-shadow: 0 0 60px var(--amber-glow);
+            position: relative;
+        }
+
+        .pricing-card.featured::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: -12px;
+            left: 2rem;
+            background: var(--amber);
+            color: var(--black);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .pricing-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pricing-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .pricing-price {
+            font-size: 2.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .pricing-price span {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .pricing-description {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+            flex: 1;
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features li::before {
+            content: '→';
+            color: var(--amber);
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .pricing-card .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Trust Section */
+        .trust {
+            background: var(--black);
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .trust-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .trust-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-2px);
+        }
+
+        .trust-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--amber-glow);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+
+        .trust-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .trust-card p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* CTA Section */
+        .cta {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            padding: 5rem 3rem;
+        }
+
+        .cta-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .cta h2 {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+
+        .cta p {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.75rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-email {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .cta-email a {
+            color: var(--amber);
+            text-decoration: none;
+        }
+
+        .cta-email a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--black);
+            padding: 4rem 3rem 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1.5fr 2fr;
+            gap: 4rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            line-height: 1.6;
+            max-width: 320px;
+        }
+
+        .footer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.25rem;
+            padding: 0.5rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--amber);
+        }
+
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .footer-column h4 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-column a {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-column a:hover {
+            color: var(--amber);
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .mobile-menu-btn span {
+            width: 24px;
+            height: 2px;
+            background: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .moat-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .process-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .vectors-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .legislative-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .problem-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .moat-features {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .vectors-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .trust-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 450px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section-with-3d {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .section-canvas {
+                height: 300px;
+                order: -1;
+            }
+
+            .section-3d-content {
+                max-width: 100%;
+            }
+
+            nav {
+                padding: 1rem 1.5rem;
+                flex-wrap: wrap;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(8, 8, 10, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 1.5rem;
+                gap: 0;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links a {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+                border-bottom: 1px solid var(--border);
+                width: 100%;
+                text-align: center;
+            }
+
+            .nav-links a:last-child {
+                border-bottom: none;
+                margin-top: 1rem;
+            }
+
+            .nav-links a::after {
+                display: none;
+            }
+
+            .nav-links .btn {
+                width: 100%;
+                justify-content: center;
+                padding: 1rem 1.5rem;
+            }
+
+            .nav-links .btn-primary {
+                color: #000000;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .mobile-menu-btn.active span:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 5px);
+            }
+
+            .mobile-menu-btn.active span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .mobile-menu-btn.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(5px, -5px);
+            }
+
+            .hero, section {
+                padding: 4rem 1.5rem;
+            }
+
+            .hero-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .stat {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 1rem;
+            }
+
+            .stat:nth-child(3), .stat:nth-child(4) {
+                border-bottom: none;
+            }
+
+            .problem-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .moat-features {
+                grid-template-columns: 1fr;
+            }
+
+            .vectors-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .case-study-card {
+                margin: 0 auto;
+                width: 100%;
+            }
+
+            .case-study-header {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+                padding: 1rem 1.5rem;
+            }
+
+            .case-study-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+
+            .finding-specs {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .case-study-result {
+                flex-direction: row;
+                justify-content: center;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .trust-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .footer-links {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .cta {
+                padding: 4rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2.25rem;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .stat {
+                border-bottom: 1px solid var(--border);
+            }
+
+            .stat:last-child {
+                border-bottom: none;
+            }
+
+            .footer-links {
+                grid-template-columns: 1fr;
+            }
+
+            .bill-card {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .bill-number {
+                width: fit-content;
+            }
+        }
+
+        /* Scroll reveal base */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Counter animation */
+        .counter {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <a href="#" class="logo">
+            <img src="images/logo.png" alt="Plumb" class="logo-img">
+        </a>
+        <div class="nav-links">
+            <a href="#problem">Why Plumb</a>
+            <a href="#moat">Our Edge</a>
+            <a href="#process">How It Works</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#contact" class="btn btn-primary">Get Free Scan</a>
+        </div>
+        <button class="mobile-menu-btn" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-canvas-container" id="hero-canvas"></div>
+        <div class="hero-glow"></div>
+        <div class="hero-glow-secondary"></div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                AI-powered contract analysis for DFW specialty trades
+            </div>
+            <h1>
+                Bid with <span class="serif">precision.</span><br>
+                Build with <span class="highlight">confidence.</span>
+            </h1>
+            <p class="hero-description">
+                AI-powered contract review for electrical, plumbing, and HVAC subcontractors. We find the hidden risks buried in 500+ page spec books before you sign&mdash;so one missed clause doesn't cost you the entire job.
+            </p>
+            <div class="hero-cta">
+                <a href="#contact" class="btn btn-primary">
+                    Get a Free Risk Scan
+                    <span>→</span>
+                </a>
+                <a href="#process" class="btn btn-secondary">
+                    See How It Works
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-value"><span class="counter" data-target="500">0</span><span>+</span></div>
+                    <div class="stat-label">Pages per bid</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value"><span class="counter" data-target="24">0</span><span>hr</span></div>
+                    <div class="stat-label">Turnaround</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value"><span class="counter" data-target="20">0</span><span>+</span></div>
+                    <div class="stat-label">Risk vectors</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">$<span class="counter" data-target="0">0</span></div>
+                    <div class="stat-label">First scan free</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem" id="problem">
+        <div class="section-with-3d">
+            <div class="section-3d-content">
+                <div class="section-header reveal">
+                    <div class="section-tag">The Problem</div>
+                    <h2 class="section-title">The fine print is where profits go to die.</h2>
+                    <p class="section-description">
+                        In DFW's booming construction market, GCs increasingly shift risk downstream through complex contract language. Without in-house counsel, one missed clause can cost you the entire job.
+                    </p>
+                </div>
+            </div>
+            <div class="section-canvas" id="problem-canvas"></div>
+        </div>
+        <div class="problem-grid">
+            <div class="problem-card">
+                <div class="problem-card-header">
+                    <div class="problem-icon">⚠</div>
+                    <h3>Action-Over Indemnity Traps</h3>
+                </div>
+                <p>GCs exploit the "employee exception" to bypass Texas Anti-Indemnity Act protections, making you liable for injuries even when you're not at fault.</p>
+                <div class="problem-stat">Unlimited liability exposure</div>
+            </div>
+            <div class="problem-card">
+                <div class="problem-card-header">
+                    <div class="problem-icon">◈</div>
+                    <h3>Consequential Damages Flow-Down</h3>
+                </div>
+                <p>Asymmetric waivers where the GC is protected from lost profits, but you remain fully exposed to the owner's consequential damages claims.</p>
+                <div class="problem-stat">One-sided risk allocation</div>
+            </div>
+            <div class="problem-card">
+                <div class="problem-card-header">
+                    <div class="problem-icon">◇</div>
+                    <h3>Pay-if-Paid Clauses</h3>
+                </div>
+                <p>You finance owner insolvency risk. If the owner doesn't pay the GC, you don't get paid&mdash;even for completed work. Texas courts often enforce these.</p>
+                <div class="problem-stat">Cash flow killer</div>
+            </div>
+            <div class="problem-card">
+                <div class="problem-card-header">
+                    <div class="problem-icon">⬡</div>
+                    <h3>Hidden Liquidated Damages</h3>
+                </div>
+                <p>Punitive delay penalties buried in general conditions ranging from $2,500 to $50,000+ per day on private contracts&mdash;often with no cap.</p>
+                <div class="problem-stat">$2,500-$50,000/day</div>
+            </div>
+            <div class="problem-card">
+                <div class="problem-card-header">
+                    <div class="problem-icon">◎</div>
+                    <h3>Scope Gaps & Conflicts</h3>
+                </div>
+                <p>Division 23 vs 26 conflicts: HVAC starters in electrical specs, VFDs in mechanical, fire alarm interfaces split across sections. Hidden costs that destroy margins.</p>
+                <div class="problem-stat">$50K-$200K+ exposure</div>
+            </div>
+            <div class="problem-card">
+                <div class="problem-card-header">
+                    <div class="problem-icon">⬢</div>
+                    <h3>Extended Warranty Traps</h3>
+                </div>
+                <p>24-month warranty requirements when your equipment suppliers only cover 12 months. You're on the hook for year two repairs and replacements.</p>
+                <div class="problem-stat">12+ months self-insured</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Competitive Moat Section -->
+    <section class="moat" id="moat">
+        <div class="moat-glow"></div>
+        <div class="section-header reveal">
+            <div class="section-tag">Our Edge</div>
+            <h2 class="section-title">Intelligence that compounds with every review.</h2>
+            <p class="section-description">
+                More than transactional legal review. Our system builds institutional knowledge about DFW's construction ecosystem&mdash;tracking GC patterns, architect tendencies, and jurisdiction-specific requirements.
+            </p>
+        </div>
+        <div class="moat-content">
+            <div class="moat-features reveal">
+                <div class="moat-feature">
+                    <div class="moat-feature-icon">🔬</div>
+                    <h4>Architectural Forensics</h4>
+                    <p>Track which design firms consistently bury requirements in wrong spec sections&mdash;like electrical in Division 23 or firestopping split across three divisions.</p>
+                </div>
+                <div class="moat-feature">
+                    <div class="moat-feature-icon">📊</div>
+                    <h4>GC Risk Profiling</h4>
+                    <p>Database of GC contract modification patterns. Know who always strikes arbitration, adds non-binding mediation, or buries scope shifts in supplemental conditions.</p>
+                </div>
+                <div class="moat-feature">
+                    <div class="moat-feature-icon">🏛️</div>
+                    <h4>Jurisdictional Intelligence</h4>
+                    <p>City-specific insights: Plano vs Fort Worth firestop logging requirements, Dallas ISD inspection timelines, municipal permit variance patterns.</p>
+                </div>
+                <div class="moat-feature">
+                    <div class="moat-feature-icon">🧠</div>
+                    <h4>Knowledge Compounding</h4>
+                    <p>Every review makes the system smarter. Our Obsidian knowledge graph captures clause patterns, precedents, and outcomes across the DFW market.</p>
+                </div>
+            </div>
+            <div class="knowledge-graph reveal">
+                <div class="knowledge-graph-header">
+                    <h4>Live Knowledge Graph</h4>
+                    <div class="knowledge-graph-badge">● Updating</div>
+                </div>
+                <div class="section-canvas" id="moat-canvas" style="height: 280px; border: none; background: transparent;"></div>
+                <div class="graph-stats">
+                    <div class="graph-stat">
+                        <div class="graph-stat-value">847</div>
+                        <div class="graph-stat-label">Contracts Indexed</div>
+                    </div>
+                    <div class="graph-stat">
+                        <div class="graph-stat-value">156</div>
+                        <div class="graph-stat-label">GCs Profiled</div>
+                    </div>
+                    <div class="graph-stat">
+                        <div class="graph-stat-value">2.4K</div>
+                        <div class="graph-stat-label">Clauses Tracked</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="process" id="process">
+        <div class="section-header reveal">
+            <div class="section-tag">How It Works</div>
+            <h2 class="section-title">From upload to insight in 24 hours.</h2>
+            <p class="section-description">
+                Our AI-augmented analysis combines semantic search with construction industry expertise to deliver actionable risk assessments.
+            </p>
+        </div>
+        <div class="process-content">
+            <div class="process-timeline">
+                <div class="process-step">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h3>Upload Bid Documents</h3>
+                        <p>Submit specs, general conditions, and addenda through our secure portal. We accept PDF, ZIP, and direct plan room links.</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h3>AI Semantic Analysis</h3>
+                        <p>mgrep pattern matching identifies risk vectors across 500+ pages. DeepSeek R1 reasoning engine analyzes context and implications.</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h3>Expert Review</h3>
+                        <p>Flagged clauses analyzed against Texas construction law and our database of DFW GC/Architect patterns. Cross-referenced with current statutes.</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">04</div>
+                    <div class="step-content">
+                        <h3>Red-Line Report</h3>
+                        <p>Clear, actionable PDF with risk scores, specific clause locations, negotiation talking points, and recommended RFI language.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tech-stack reveal">
+                <div class="tech-stack-header">
+                    <h4>Under the Hood</h4>
+                    <div class="tech-stack-badge">Local Processing</div>
+                </div>
+                <div class="section-canvas" id="process-canvas" style="height: 320px; border: none; background: transparent;"></div>
+                <div class="tech-security">
+                    <div class="security-badge">
+                        <span class="icon">✓</span> APFS Encrypted
+                    </div>
+                    <div class="security-badge">
+                        <span class="icon">✓</span> Local Mac Mini
+                    </div>
+                    <div class="security-badge">
+                        <span class="icon">✓</span> No Cloud Storage
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Risk Vectors Section -->
+    <section class="vectors" id="vectors">
+        <div class="section-header centered reveal">
+            <div class="section-tag">Risk Vectors</div>
+            <h2 class="section-title">20+ terms scanned on every bid.</h2>
+            <p class="section-description">
+                Comprehensive analysis of the contract provisions most likely to impact your bottom line.
+            </p>
+        </div>
+        <div class="vectors-grid reveal">
+            <div class="vector-item">
+                <div class="vector-number">01</div>
+                <div class="vector-name">Liquidated Damages</div>
+                <div class="vector-desc">Daily penalty amounts, caps, notice requirements</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">02</div>
+                <div class="vector-name">Indemnification</div>
+                <div class="vector-desc">Scope, carve-outs, insurance tie-ins</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">03</div>
+                <div class="vector-name">Consequential Damages</div>
+                <div class="vector-desc">Waiver mutuality, lost profit exposure</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">04</div>
+                <div class="vector-name">Pay-if-Paid / Pay-when-Paid</div>
+                <div class="vector-desc">Payment conditionality, Texas enforceability</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">05</div>
+                <div class="vector-name">Warranty Duration</div>
+                <div class="vector-desc">Extended terms, manufacturer gaps</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">06</div>
+                <div class="vector-name">Retainage Terms</div>
+                <div class="vector-desc">Percentage, release conditions, timing</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">07</div>
+                <div class="vector-name">Scope Exclusions</div>
+                <div class="vector-desc">Division conflicts, coordination gaps</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">08</div>
+                <div class="vector-name">Bond Requirements</div>
+                <div class="vector-desc">Performance/payment bond thresholds</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">09</div>
+                <div class="vector-name">Insurance Thresholds</div>
+                <div class="vector-desc">Coverage limits, additional insured status</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">10</div>
+                <div class="vector-name">Change Order Procedures</div>
+                <div class="vector-desc">Notice periods, pricing windows, approvals</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">11</div>
+                <div class="vector-name">No Damages for Delay</div>
+                <div class="vector-desc">Time extension only provisions</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">12</div>
+                <div class="vector-name">Lien Waiver Requirements</div>
+                <div class="vector-desc">Conditional vs unconditional, timing</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">13</div>
+                <div class="vector-name">Dispute Resolution</div>
+                <div class="vector-desc">Arbitration, mediation, venue clauses</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">14</div>
+                <div class="vector-name">Termination Rights</div>
+                <div class="vector-desc">For cause vs convenience, cure periods</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">15</div>
+                <div class="vector-name">Flow-Down Provisions</div>
+                <div class="vector-desc">Prime contract incorporation scope</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">16</div>
+                <div class="vector-name">Safety Requirements</div>
+                <div class="vector-desc">OSHA compliance, site-specific rules</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">17</div>
+                <div class="vector-name">Schedule Acceleration</div>
+                <div class="vector-desc">Compression rights, cost allocation</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">18</div>
+                <div class="vector-name">Backcharge Rights</div>
+                <div class="vector-desc">Notice requirements, dispute process</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">19</div>
+                <div class="vector-name">Prevailing Wage</div>
+                <div class="vector-desc">Davis-Bacon, state requirements</div>
+            </div>
+            <div class="vector-item">
+                <div class="vector-number">20</div>
+                <div class="vector-name">Force Majeure</div>
+                <div class="vector-desc">Covered events, notice, remedies</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Legislative Section -->
+    <section class="legislative" id="legislative">
+        <div class="section-header reveal">
+            <div class="section-tag">2025 Updates</div>
+            <h2 class="section-title">Texas legislative changes we're monitoring.</h2>
+            <p class="section-description">
+                New laws effective in 2025 that directly impact construction contract enforcement and subcontractor rights.
+            </p>
+        </div>
+        <div class="legislative-content">
+            <div class="bills-list reveal">
+                <div class="bill-card">
+                    <div class="bill-number">SB 841</div>
+                    <div class="bill-info">
+                        <h4>Trust Fund Claim Assignment</h4>
+                        <p>Allows assignment of trust fund claims to third parties, enabling new collection strategies for unpaid subcontractors.</p>
+                    </div>
+                    <div class="bill-date">Effective Sept 1, 2025</div>
+                </div>
+                <div class="bill-card">
+                    <div class="bill-number">HB 3005</div>
+                    <div class="bill-info">
+                        <h4>Prompt Payment Act Audit Fix</h4>
+                        <p>Closes the "audit loophole"&mdash;GCs can no longer indefinitely delay payment by claiming incomplete audit. 60-day hard limit.</p>
+                    </div>
+                    <div class="bill-date">Effective Sept 1, 2025</div>
+                </div>
+                <div class="bill-card">
+                    <div class="bill-number">SB 929</div>
+                    <div class="bill-info">
+                        <h4>Lien Deadline Extension</h4>
+                        <p>If lien filing deadline falls on weekend/holiday, extends to next business day. Prevents technical defaults on tight timelines.</p>
+                    </div>
+                    <div class="bill-date">Effective Sept 1, 2025</div>
+                </div>
+                <div class="bill-card">
+                    <div class="bill-number">HB 2960</div>
+                    <div class="bill-info">
+                        <h4>Venue Clause Voidability</h4>
+                        <p>Out-of-state venue clauses for Texas projects are now voidable. No more defending claims in Delaware or California courts.</p>
+                    </div>
+                    <div class="bill-date">Effective Sept 1, 2025</div>
+                </div>
+            </div>
+            <div class="legislative-sidebar reveal">
+                <h4><span class="icon">⚖️</span> Continuous Monitoring</h4>
+                <div class="section-canvas" id="legislative-canvas" style="height: 280px; border: none; background: transparent; margin: 1rem 0;"></div>
+                <div class="monitored-list">
+                    <span class="monitored-item">Tex. Prop. Code Ch. 162</span>
+                    <span class="monitored-item">Tex. Bus. & Com. Code Ch. 28</span>
+                    <span class="monitored-item">Tex. Ins. Code Ch. 151</span>
+                    <span class="monitored-item">Tex. Gov't Code Ch. 2253</span>
+                    <span class="monitored-item">TAC Title 22, Part 1</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Case Study Section -->
+    <section class="case-study" id="case-study">
+        <div class="section-header centered reveal">
+            <div class="section-tag">Real Finding</div>
+            <h2 class="section-title">Caught before it cost $120,000.</h2>
+            <p class="section-description">
+                Example of a scope conflict our analysis identified on a recent DFW school district project.
+            </p>
+        </div>
+        <div class="case-study-card reveal">
+            <div class="case-study-header">
+                <div class="case-study-type">
+                    <span>●</span> Scope Conflict Identified
+                </div>
+                <div class="case-study-project">50-Unit ISD Campus | Electrical Subcontract</div>
+            </div>
+            <div class="case-study-content">
+                <div class="finding-section">
+                    <h4>The Hidden Conflict</h4>
+                    <div class="finding-quote">
+                        <p>"Spec Section 26-00-00 requires Electrical contractor to provide HVAC motor starters. However, Spec Section 23-00-00 states Mechanical contractor provides all HVAC equipment including starters. Neither division references the other."</p>
+                    </div>
+                    <div class="finding-specs">
+                        <div class="spec-tag conflict">
+                            <span class="icon">⚠</span> Division 26-00-00
+                        </div>
+                        <div class="spec-tag conflict">
+                            <span class="icon">⚠</span> Division 23-00-00
+                        </div>
+                        <div class="spec-tag">
+                            <span class="icon">📄</span> 50 RTU units
+                        </div>
+                    </div>
+                    <div class="finding-resolution">
+                        <h5>✓ Recommended Action</h5>
+                        <p>Submit RFI to architect requesting clarification before bid. If not clarified, include explicit exclusion in proposal. Starters at $2,400 each × 50 units = $120,000 scope gap.</p>
+                    </div>
+                </div>
+                <div class="case-study-result">
+                    <div class="result-label">Cost Avoided</div>
+                    <div class="result-value">$120K</div>
+                    <div class="result-context">via pre-bid RFI</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="section-header centered reveal">
+            <div class="section-tag">Pricing</div>
+            <h2 class="section-title">Protect your margins.</h2>
+            <p class="section-description">
+                One caught clause pays for a year of service. Choose the plan that fits your bid volume.
+            </p>
+        </div>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <div class="pricing-name">Spot Check</div>
+                    <div class="pricing-price">$150 <span>/ bid</span></div>
+                    <p class="pricing-description">Quick scan for the most critical risks.</p>
+                </div>
+                <ul class="pricing-features">
+                    <li>General Conditions review only</li>
+                    <li>Top 10 risk vectors scanned</li>
+                    <li>48-hour turnaround</li>
+                    <li>PDF summary report</li>
+                    <li>Email delivery</li>
+                </ul>
+                <a href="#contact" class="btn btn-secondary">Get Started</a>
+            </div>
+            <div class="pricing-card featured">
+                <div class="pricing-header">
+                    <div class="pricing-name">Full Scope</div>
+                    <div class="pricing-price">$450 <span>/ bid</span></div>
+                    <p class="pricing-description">Complete analysis with expert reasoning.</p>
+                </div>
+                <ul class="pricing-features">
+                    <li>Full spec book analysis (all divisions)</li>
+                    <li>All 20+ risk vectors scanned</li>
+                    <li>24-hour turnaround</li>
+                    <li>Detailed red-line report</li>
+                    <li>GC/Architect history check</li>
+                    <li>Negotiation talking points</li>
+                    <li>RFI language recommendations</li>
+                </ul>
+                <a href="#contact" class="btn btn-primary">Get Started</a>
+            </div>
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <div class="pricing-name">Retainer</div>
+                    <div class="pricing-price">$2,000 <span>/ mo</span></div>
+                    <p class="pricing-description">For high-volume bidders.</p>
+                </div>
+                <ul class="pricing-features">
+                    <li>Up to 10 full reviews per month</li>
+                    <li>Priority 12-hour turnaround</li>
+                    <li>Addendum monitoring & alerts</li>
+                    <li>Dedicated analyst</li>
+                    <li>Quarterly risk briefings</li>
+                    <li>Phone consultation access</li>
+                </ul>
+                <a href="#contact" class="btn btn-secondary">Contact Us</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="trust" id="trust">
+        <div class="section-header centered reveal">
+            <div class="section-tag">Why Plumb</div>
+            <h2 class="section-title">Built for DFW specialty trades.</h2>
+        </div>
+        <div class="trust-grid reveal">
+            <div class="trust-card">
+                <div class="trust-icon">📍</div>
+                <h4>Local Market Focus</h4>
+                <p>Deep expertise in DFW ISDs, municipalities, and the GCs who dominate this market. We know the players and their patterns.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon">🔒</div>
+                <h4>Data Security</h4>
+                <p>APFS encryption on local Mac Mini infrastructure. Your bid documents never touch cloud servers. Full data custody.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon">⚖️</div>
+                <h4>Texas Law Compliance</h4>
+                <p>Every analysis verified against current Texas construction statutes, anti-indemnity regulations, and recent case law.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon">🎯</div>
+                <h4>Trade-Specific</h4>
+                <p>Purpose-built for electrical, plumbing, and HVAC subs. We understand Division 23, 26, 28 scope conflicts intimately.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta" id="contact">
+        <div class="cta-content reveal">
+            <h2>Ready to bid with <span class="serif">clarity?</span></h2>
+            <p>Get a free risk scan on your current bid. No commitment, no credit card&mdash;just insights that protect your margins.</p>
+            <div class="cta-buttons">
+                <a href="mailto:risk@plumb-bids.com?subject=Free%20Risk%20Scan%20Request" class="btn btn-primary">
+                    Get Your Free Scan
+                    <span>→</span>
+                </a>
+                <a href="#pricing" class="btn btn-secondary">
+                    View Pricing
+                </a>
+            </div>
+            <p class="cta-email">Or email us directly: <a href="mailto:risk@plumb-bids.com">risk@plumb-bids.com</a></p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <a href="#" class="logo">
+                    <img src="images/logo.png" alt="Plumb" class="logo-img">
+                </a>
+                <p>AI-powered contract intelligence for DFW subcontractors. True alignment. Zero risk.</p>
+                <div class="footer-badge">
+                    <span>📍</span> Built for DFW Subcontractors
+                </div>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#problem">Why Plumb</a></li>
+                        <li><a href="#moat">Our Edge</a></li>
+                        <li><a href="#process">How It Works</a></li>
+                        <li><a href="#vectors">Risk Vectors</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#legislative">2025 TX Legislation</a></li>
+                        <li><a href="#case-study">Case Studies</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="mailto:risk@plumb-bids.com">risk@plumb-bids.com</a></li>
+                        <li><a href="#">Dallas-Fort Worth, TX</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2025 Plumb. All rights reserved.</span>
+            <span>True Alignment. Zero Risk.</span>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        let lastScroll = 0;
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.scrollY;
+
+            if (currentScroll > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+
+            lastScroll = currentScroll;
+        });
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all reveal elements
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Observe problem cards with stagger
+        document.querySelectorAll('.problem-card').forEach((card, index) => {
+            card.style.transitionDelay = `${index * 0.1}s`;
+            observer.observe(card);
+        });
+
+        // Observe process steps with stagger
+        document.querySelectorAll('.process-step').forEach((step, index) => {
+            step.style.transitionDelay = `${index * 0.15}s`;
+            observer.observe(step);
+        });
+
+        // Observe pricing cards with stagger
+        document.querySelectorAll('.pricing-card').forEach((card, index) => {
+            card.style.transitionDelay = `${index * 0.15}s`;
+            observer.observe(card);
+        });
+
+        // Observe vector items with stagger
+        document.querySelectorAll('.vector-item').forEach((item, index) => {
+            item.style.transitionDelay = `${index * 0.03}s`;
+        });
+
+        // Counter animation
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = parseInt(counter.getAttribute('data-target'));
+                    const duration = 2000;
+                    const step = target / (duration / 16);
+                    let current = 0;
+
+                    const updateCounter = () => {
+                        current += step;
+                        if (current < target) {
+                            counter.textContent = Math.floor(current);
+                            requestAnimationFrame(updateCounter);
+                        } else {
+                            counter.textContent = target;
+                        }
+                    };
+
+                    updateCounter();
+                    counterObserver.unobserve(counter);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.counter').forEach(counter => {
+            counterObserver.observe(counter);
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const navHeight = navbar.offsetHeight;
+                    const targetPosition = target.getBoundingClientRect().top + window.scrollY - navHeight;
+
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Parallax effect for hero glow
+        let ticking = false;
+        document.addEventListener('mousemove', (e) => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const glow = document.querySelector('.hero-glow');
+                    const glowSecondary = document.querySelector('.hero-glow-secondary');
+                    if (glow && glowSecondary) {
+                        const x = (e.clientX / window.innerWidth - 0.5) * 30;
+                        const y = (e.clientY / window.innerHeight - 0.5) * 30;
+                        glow.style.transform = `translate(${x}px, ${y}px)`;
+                        glowSecondary.style.transform = `translate(${-x * 0.5}px, ${-y * 0.5}px)`;
+                    }
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // Knowledge graph node animation
+        const graphNodes = document.querySelectorAll('.graph-node:not(.central)');
+        graphNodes.forEach((node, index) => {
+            const delay = index * 0.5;
+            node.style.animation = `float ${3 + (index % 3)}s ease-in-out ${delay}s infinite`;
+        });
+
+        // Add floating animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-8px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ============================================
+        // THREE.JS GLB SCENE MANAGER
+        // ============================================
+
+        // Configuration for each scene
+        // Model mapping:
+        // - Hero: big_construction_dig_site_and_heaps.glb (dramatic excavation scene)
+        // - Problem: construction_site_.rawscan..glb (raw/chaotic complexity)
+        // - Edge: industrial_buildings_set_-_low_poly_models.glb (clean, organized)
+        // - Process: construction_site_collection.glb (collection = workflow)
+        const sceneConfigs = {
+            hero: {
+                containerId: 'hero-canvas',
+                modelPath: 'public/3d/big_construction_dig_site_and_heaps.glb',
+                cameraDistance: 35,           // Large excavation scene needs distance
+                cameraSpeed: 0.0002,          // Slow orbit for dramatic effect
+                modelRotation: 0.0003,        // Very subtle rotation
+                modelScale: 0.8,              // Scale down slightly to fit
+                modelPosition: [0, -5, 0],    // Lower to show ground level
+                animationSpeed: 1.0,
+                ambientIntensity: 1.0,        // Bright outdoor lighting
+                directionalIntensity: 1.2,
+                floatAmplitude: 0,            // No floating for construction site
+                floatSpeed: 0
+            },
+            problem: {
+                containerId: 'problem-canvas',
+                modelPath: 'public/3d/construction_site_.rawscan..glb',
+                cameraDistance: 30,           // Raw scan needs space
+                cameraSpeed: 0.0002,
+                modelRotation: 0.0004,
+                modelScale: 0.6,              // Scale to fit container
+                modelPosition: [0, -3, 0],
+                animationSpeed: 0.8,
+                ambientIntensity: 0.9,
+                directionalIntensity: 1.0,
+                floatAmplitude: 0,
+                floatSpeed: 0
+            },
+            edge: {
+                containerId: 'moat-canvas',
+                modelPath: 'public/3d/industrial_buildings_set_-_low_poly_models.glb',
+                cameraDistance: 40,           // Building set needs wider view
+                cameraSpeed: 0.0003,
+                modelRotation: 0.0005,
+                modelScale: 0.5,
+                modelPosition: [0, -4, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.95,
+                directionalIntensity: 1.1,
+                floatAmplitude: 0,
+                floatSpeed: 0
+            },
+            process: {
+                containerId: 'process-canvas',
+                modelPath: 'public/3d/construction_site_collection.glb',
+                cameraDistance: 32,
+                cameraSpeed: 0.00025,
+                modelRotation: 0.0004,
+                modelScale: 0.55,
+                modelPosition: [0, -3.5, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.95,
+                directionalIntensity: 1.05,
+                floatAmplitude: 0,
+                floatSpeed: 0
+            }
+        };
+
+        // Scene Manager Class
+        class SceneManager {
+            constructor(config) {
+                this.config = config;
+                this.container = document.getElementById(config.containerId);
+                if (!this.container || typeof THREE === 'undefined') return;
+
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.model = null;
+                this.mixer = null;
+                this.clock = new THREE.Clock();
+                this.isVisible = true;
+                this.isTabVisible = true;
+                this.animationId = null;
+                this.cameraAngle = 0;
+                this.floatOffset = Math.random() * Math.PI * 2;
+
+                this.init();
+            }
+
+            init() {
+                // Create scene
+                this.scene = new THREE.Scene();
+
+                // Create camera
+                const aspect = this.container.clientWidth / this.container.clientHeight;
+                this.camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 1000);
+                this.camera.position.z = this.config.cameraDistance;
+
+                // Create renderer
+                this.renderer = new THREE.WebGLRenderer({
+                    antialias: true,
+                    alpha: true,
+                    powerPreference: 'high-performance'
+                });
+                this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.outputEncoding = THREE.sRGBEncoding;
+                this.container.appendChild(this.renderer.domElement);
+
+                // Add lighting
+                this.addLighting();
+
+                // Load model
+                this.loadModel();
+
+                // Setup observers
+                this.setupIntersectionObserver();
+                this.setupVisibilityHandler();
+                this.setupResizeHandler();
+
+                // Start animation
+                this.animate();
+            }
+
+            addLighting() {
+                // Hemisphere light
+                const hemiLight = new THREE.HemisphereLight(
+                    0xffffff,
+                    0x444444,
+                    this.config.ambientIntensity
+                );
+                hemiLight.position.set(0, 20, 0);
+                this.scene.add(hemiLight);
+
+                // Directional light
+                const dirLight = new THREE.DirectionalLight(
+                    0xffffff,
+                    this.config.directionalIntensity
+                );
+                dirLight.position.set(5, 5, 5);
+                dirLight.castShadow = false;
+                this.scene.add(dirLight);
+
+                // Additional fill light
+                const fillLight = new THREE.DirectionalLight(0xf0a500, 0.3);
+                fillLight.position.set(-5, 0, -5);
+                this.scene.add(fillLight);
+            }
+
+            loadModel() {
+                // Try to load GLB model
+                const loader = new THREE.GLTFLoader();
+
+                loader.load(
+                    this.config.modelPath,
+                    (gltf) => {
+                        this.model = gltf.scene;
+
+                        // Apply scale
+                        this.model.scale.setScalar(this.config.modelScale);
+
+                        // Center model first
+                        const box = new THREE.Box3().setFromObject(this.model);
+                        const center = box.getCenter(new THREE.Vector3());
+                        this.model.position.sub(center);
+
+                        // Then apply config offset (for adjustments like lowering ground level)
+                        this.model.position.x += this.config.modelPosition[0];
+                        this.model.position.y += this.config.modelPosition[1];
+                        this.model.position.z += this.config.modelPosition[2];
+
+                        this.scene.add(this.model);
+
+                        // Setup animations if present
+                        if (gltf.animations && gltf.animations.length > 0) {
+                            this.mixer = new THREE.AnimationMixer(this.model);
+                            gltf.animations.forEach(clip => {
+                                const action = this.mixer.clipAction(clip);
+                                action.setEffectiveTimeScale(this.config.animationSpeed);
+                                action.play();
+                            });
+                        }
+
+                        // Log model info for debugging
+                        const size = box.getSize(new THREE.Vector3());
+                        console.log(`Loaded ${this.config.modelPath}: size=${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}, animations=${gltf.animations.length}`);
+                    },
+                    (progress) => {
+                        // Loading progress
+                        if (progress.total > 0) {
+                            const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                            console.log(`Loading ${this.config.containerId}: ${percent}%`);
+                        }
+                    },
+                    (error) => {
+                        // GLB not found - create fallback procedural scene
+                        console.log(`GLB not found for ${this.config.containerId}, using fallback: ${error.message}`);
+                        this.createFallbackScene();
+                    }
+                );
+            }
+
+            createFallbackScene() {
+                // Create a sophisticated fallback based on section type
+                const containerId = this.config.containerId;
+
+                if (containerId === 'hero-canvas' || containerId === 'problem-canvas') {
+                    this.createDocumentScene();
+                } else if (containerId === 'moat-canvas') {
+                    this.createNetworkScene();
+                } else if (containerId === 'process-canvas') {
+                    this.createPipelineScene();
+                }
+            }
+
+            createDocumentScene() {
+                // Floating document pages with particles
+                const group = new THREE.Group();
+
+                for (let i = 0; i < 4; i++) {
+                    const geometry = new THREE.PlaneGeometry(1.8, 2.4);
+                    const material = new THREE.MeshStandardMaterial({
+                        color: 0xf5f5f7,
+                        transparent: true,
+                        opacity: 0.85 - i * 0.15,
+                        side: THREE.DoubleSide,
+                        roughness: 0.8,
+                        metalness: 0.1
+                    });
+                    const page = new THREE.Mesh(geometry, material);
+                    page.position.set(i * 0.1, i * 0.08, -i * 0.2);
+                    page.rotation.y = i * 0.03;
+
+                    // Add lines to page
+                    for (let j = 0; j < 10; j++) {
+                        const lineGeo = new THREE.PlaneGeometry(1.4, 0.04);
+                        const lineMat = new THREE.MeshBasicMaterial({
+                            color: 0x5c5c6d,
+                            transparent: true,
+                            opacity: 0.3
+                        });
+                        const line = new THREE.Mesh(lineGeo, lineMat);
+                        line.position.set(0, 0.9 - j * 0.2, 0.01);
+                        page.add(line);
+                    }
+
+                    group.add(page);
+                }
+
+                // Red highlight
+                const highlightGeo = new THREE.PlaneGeometry(1.2, 0.12);
+                const highlightMat = new THREE.MeshBasicMaterial({
+                    color: 0xef4444,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const highlight = new THREE.Mesh(highlightGeo, highlightMat);
+                highlight.position.set(0, 0.3, 0.03);
+                highlight.userData.isHighlight = true;
+                group.children[0].add(highlight);
+
+                // Particles
+                const particleCount = 300;
+                const particleGeo = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 6;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 6;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 3;
+                }
+                particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const particleMat = new THREE.PointsMaterial({
+                    color: 0xef4444,
+                    size: 0.03,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                const particles = new THREE.Points(particleGeo, particleMat);
+                particles.userData.isParticles = true;
+                group.add(particles);
+
+                this.model = group;
+                this.scene.add(group);
+            }
+
+            createNetworkScene() {
+                // Neural network visualization
+                const group = new THREE.Group();
+                const nodes = [];
+                const nodeData = [
+                    { x: 0, y: 0, z: 0, size: 0.3, color: 0xf0a500 },
+                    { x: -1.3, y: 0.9, z: 0.4, size: 0.18, color: 0x3b82f6 },
+                    { x: 1.3, y: 0.9, z: -0.3, size: 0.18, color: 0x3b82f6 },
+                    { x: -1.1, y: -0.9, z: 0.2, size: 0.18, color: 0x06b6d4 },
+                    { x: 1.2, y: -0.7, z: 0.3, size: 0.18, color: 0x06b6d4 },
+                    { x: 0, y: 1.3, z: -0.4, size: 0.15, color: 0x3b82f6 },
+                    { x: -0.7, y: 0.4, z: 0.8, size: 0.12, color: 0x06b6d4 },
+                    { x: 0.8, y: -0.2, z: 0.7, size: 0.12, color: 0x06b6d4 }
+                ];
+
+                nodeData.forEach((data, i) => {
+                    const geometry = new THREE.SphereGeometry(data.size, 24, 24);
+                    const material = new THREE.MeshStandardMaterial({
+                        color: data.color,
+                        transparent: true,
+                        opacity: i === 0 ? 1 : 0.8,
+                        emissive: data.color,
+                        emissiveIntensity: i === 0 ? 0.3 : 0.1,
+                        roughness: 0.4,
+                        metalness: 0.6
+                    });
+                    const node = new THREE.Mesh(geometry, material);
+                    node.position.set(data.x, data.y, data.z);
+                    node.userData = { originalPos: { ...data }, index: i };
+                    nodes.push(node);
+                    group.add(node);
+                });
+
+                // Connections
+                const connections = [[0,1],[0,2],[0,3],[0,4],[0,5],[1,5],[2,4],[3,6],[4,7]];
+                connections.forEach(pair => {
+                    const material = new THREE.LineBasicMaterial({
+                        color: 0x3b82f6,
+                        transparent: true,
+                        opacity: 0.25
+                    });
+                    const geometry = new THREE.BufferGeometry();
+                    const positions = new Float32Array(6);
+                    const n1 = nodeData[pair[0]], n2 = nodeData[pair[1]];
+                    positions[0] = n1.x; positions[1] = n1.y; positions[2] = n1.z;
+                    positions[3] = n2.x; positions[4] = n2.y; positions[5] = n2.z;
+                    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                    const line = new THREE.Line(geometry, material);
+                    line.userData.isConnection = true;
+                    group.add(line);
+                });
+
+                group.userData.nodes = nodes;
+                this.model = group;
+                this.scene.add(group);
+            }
+
+            createPipelineScene() {
+                // Data pipeline visualization
+                const group = new THREE.Group();
+
+                // Input document
+                const docGeo = new THREE.BoxGeometry(0.7, 1, 0.05);
+                const docMat = new THREE.MeshStandardMaterial({
+                    color: 0xf5f5f7,
+                    roughness: 0.8
+                });
+                const inputDoc = new THREE.Mesh(docGeo, docMat);
+                inputDoc.position.set(-2.2, 0, 0);
+                group.add(inputDoc);
+
+                // Processing core
+                const coreGeo = new THREE.IcosahedronGeometry(0.6, 1);
+                const coreMat = new THREE.MeshStandardMaterial({
+                    color: 0x3b82f6,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const core = new THREE.Mesh(coreGeo, coreMat);
+                core.userData.isCore = true;
+                group.add(core);
+
+                // Inner core
+                const innerGeo = new THREE.IcosahedronGeometry(0.35, 1);
+                const innerMat = new THREE.MeshStandardMaterial({
+                    color: 0xf0a500,
+                    emissive: 0xf0a500,
+                    emissiveIntensity: 0.4,
+                    roughness: 0.3,
+                    metalness: 0.7
+                });
+                const inner = new THREE.Mesh(innerGeo, innerMat);
+                inner.userData.isInnerCore = true;
+                core.add(inner);
+
+                // Output shield
+                const shieldShape = new THREE.Shape();
+                shieldShape.moveTo(0, 0.5);
+                shieldShape.lineTo(0.4, 0.3);
+                shieldShape.lineTo(0.4, -0.15);
+                shieldShape.lineTo(0, -0.4);
+                shieldShape.lineTo(-0.4, -0.15);
+                shieldShape.lineTo(-0.4, 0.3);
+                shieldShape.closePath();
+                const shieldGeo = new THREE.ExtrudeGeometry(shieldShape, { depth: 0.08, bevelEnabled: false });
+                const shieldMat = new THREE.MeshStandardMaterial({
+                    color: 0x22c55e,
+                    emissive: 0x22c55e,
+                    emissiveIntensity: 0.2,
+                    roughness: 0.4,
+                    metalness: 0.5
+                });
+                const shield = new THREE.Mesh(shieldGeo, shieldMat);
+                shield.position.set(2.2, 0, 0);
+                shield.rotation.y = Math.PI;
+                group.add(shield);
+
+                // Flow particles
+                for (let i = 0; i < 60; i++) {
+                    const pGeo = new THREE.SphereGeometry(0.025, 8, 8);
+                    const pMat = new THREE.MeshBasicMaterial({
+                        color: i % 3 === 0 ? 0xf0a500 : 0x3b82f6,
+                        transparent: true,
+                        opacity: 0
+                    });
+                    const particle = new THREE.Mesh(pGeo, pMat);
+                    particle.userData = {
+                        isFlowParticle: true,
+                        progress: Math.random(),
+                        speed: 0.003 + Math.random() * 0.004,
+                        yOffset: (Math.random() - 0.5) * 0.6,
+                        zOffset: (Math.random() - 0.5) * 0.4
+                    };
+                    group.add(particle);
+                }
+
+                this.model = group;
+                this.scene.add(group);
+            }
+
+            setupIntersectionObserver() {
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach(entry => {
+                            this.isVisible = entry.isIntersecting;
+                        });
+                    },
+                    { threshold: 0.1 }
+                );
+                observer.observe(this.container);
+            }
+
+            setupVisibilityHandler() {
+                document.addEventListener('visibilitychange', () => {
+                    this.isTabVisible = !document.hidden;
+                });
+            }
+
+            setupResizeHandler() {
+                window.addEventListener('resize', () => {
+                    if (!this.container) return;
+                    const width = this.container.clientWidth;
+                    const height = this.container.clientHeight;
+                    this.camera.aspect = width / height;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(width, height);
+                });
+            }
+
+            animate() {
+                this.animationId = requestAnimationFrame(() => this.animate());
+
+                // Skip if not visible
+                if (!this.isVisible || !this.isTabVisible) return;
+
+                const delta = this.clock.getDelta();
+                const time = this.clock.getElapsedTime();
+
+                // Update mixer if present
+                if (this.mixer) {
+                    this.mixer.update(delta * this.config.animationSpeed);
+                }
+
+                // Animate model
+                if (this.model) {
+                    // Camera orbit
+                    this.cameraAngle += this.config.cameraSpeed;
+                    this.camera.position.x = Math.sin(this.cameraAngle) * this.config.cameraDistance * 0.3;
+                    this.camera.position.z = this.config.cameraDistance + Math.cos(this.cameraAngle) * 0.5;
+                    this.camera.lookAt(0, 0, 0);
+
+                    // Model rotation
+                    this.model.rotation.y += this.config.modelRotation;
+
+                    // Floating motion
+                    this.model.position.y = Math.sin(time * this.config.floatSpeed + this.floatOffset) * this.config.floatAmplitude;
+
+                    // Animate fallback scenes
+                    this.animateFallbackElements(time);
+                }
+
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            animateFallbackElements(time) {
+                if (!this.model) return;
+
+                this.model.traverse(child => {
+                    // Pulse highlight
+                    if (child.userData.isHighlight) {
+                        child.material.opacity = 0.4 + Math.sin(time * 3) * 0.3;
+                    }
+
+                    // Animate particles
+                    if (child.userData.isParticles) {
+                        const positions = child.geometry.attributes.position.array;
+                        for (let i = 0; i < positions.length; i += 3) {
+                            positions[i] += (Math.random() - 0.5) * 0.01;
+                            positions[i + 1] -= 0.008;
+                            if (positions[i + 1] < -3) positions[i + 1] = 3;
+                        }
+                        child.geometry.attributes.position.needsUpdate = true;
+                    }
+
+                    // Animate network nodes
+                    if (child.userData.originalPos) {
+                        const orig = child.userData.originalPos;
+                        const offset = child.userData.index * 0.5;
+                        child.position.x = orig.x + Math.sin(time + offset) * 0.08;
+                        child.position.y = orig.y + Math.cos(time * 0.8 + offset) * 0.08;
+
+                        if (child.userData.index === 0) {
+                            child.scale.setScalar(1 + Math.sin(time * 2) * 0.05);
+                        }
+                    }
+
+                    // Animate processing core
+                    if (child.userData.isCore) {
+                        child.rotation.x = time * 0.5;
+                        child.rotation.y = time * 0.3;
+                    }
+                    if (child.userData.isInnerCore) {
+                        child.rotation.x = -time * 0.7;
+                        child.rotation.y = -time * 0.4;
+                    }
+
+                    // Animate flow particles
+                    if (child.userData.isFlowParticle) {
+                        child.userData.progress += child.userData.speed;
+                        if (child.userData.progress > 1) child.userData.progress = 0;
+
+                        const p = child.userData.progress;
+                        child.position.x = -2.5 + p * 5;
+                        child.position.y = child.userData.yOffset + Math.sin(p * Math.PI * 3) * 0.15;
+                        child.position.z = child.userData.zOffset + Math.sin(p * Math.PI * 2) * 0.2;
+                        child.material.opacity = Math.sin(p * Math.PI) * 0.7;
+                    }
+                });
+            }
+
+            dispose() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                if (this.renderer) {
+                    this.renderer.dispose();
+                }
+                if (this.scene) {
+                    this.scene.traverse(child => {
+                        if (child.geometry) child.geometry.dispose();
+                        if (child.material) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(m => m.dispose());
+                            } else {
+                                child.material.dispose();
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        // GLTFLoader is loaded from CDN (three@0.128.0/examples/js/loaders/GLTFLoader.js)
+
+        // Initialize all scenes
+        const sceneManagers = [];
+
+        function initScenes() {
+            Object.values(sceneConfigs).forEach(config => {
+                const manager = new SceneManager(config);
+                if (manager.container) {
+                    sceneManagers.push(manager);
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initScenes);
+        } else {
+            initScenes();
+        }
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+
+        if (mobileMenuBtn && navLinks) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenuBtn.classList.toggle('active');
+                navLinks.classList.toggle('active');
+            });
+
+            // Close menu when clicking a link
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenuBtn.classList.remove('active');
+                    navLinks.classList.remove('active');
+                });
+            });
+        }
+    </script>
+</body>
+</html>

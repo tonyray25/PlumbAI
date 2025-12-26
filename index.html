@@ -1392,6 +1392,8 @@
         /* Trust Section */
         .trust {
             background: var(--black);
+            position: relative;
+            overflow: hidden;
         }
 
         .trust-grid {
@@ -2384,11 +2386,12 @@
 
     <!-- Trust Section -->
     <section class="trust" id="trust">
-        <div class="section-header centered reveal">
+        <div class="section-canvas" id="trust-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; opacity: 0.2;"></div>
+        <div class="section-header centered reveal" style="position: relative; z-index: 1;">
             <div class="section-tag">Why Plumb</div>
             <h2 class="section-title">Built for DFW specialty trades.</h2>
         </div>
-        <div class="trust-grid reveal">
+        <div class="trust-grid reveal" style="position: relative; z-index: 1;">
             <div class="trust-card">
                 <div class="trust-icon">📍</div>
                 <h4>Local Market Focus</h4>
@@ -2632,45 +2635,49 @@
         const sceneConfigs = {
             hero: {
                 containerId: 'hero-canvas',
-                modelPath: 'public/3d/big_construction_dig_site_and_heaps.glb',
-                cameraDistance: 35,           // Large excavation scene needs distance
-                cameraSpeed: 0.0002,          // Slow orbit for dramatic effect
-                modelRotation: 0.0003,        // Very subtle rotation
-                modelScale: 0.8,              // Scale down slightly to fit
-                modelPosition: [0, -5, 0],    // Lower to show ground level
+                modelPath: 'models/quantum_knot.glb',  // Quantum knot as AI power symbol
+                cameraDistance: 8,
+                cameraSpeed: 0.0001,
+                modelRotation: 0.0004,
+                modelScale: 3.5,  // Large focal point
+                modelPosition: [2, 0.5, 0],  // Offset right for visual balance
                 animationSpeed: 1.0,
-                ambientIntensity: 1.0,        // Bright outdoor lighting
+                ambientIntensity: 0.8,
                 directionalIntensity: 1.2,
-                floatAmplitude: 0,            // No floating for construction site
-                floatSpeed: 0
+                floatAmplitude: 0.5,
+                floatSpeed: 0.8,
+                enableMouseParallax: true,  // NEW: Mouse interaction
+                glowPulse: true  // NEW: Pulsing glow effect
             },
             problem: {
                 containerId: 'problem-canvas',
-                modelPath: 'public/3d/construction_site_.rawscan..glb',
-                cameraDistance: 30,           // Raw scan needs space
-                cameraSpeed: 0.0002,
-                modelRotation: 0.0004,
-                modelScale: 0.6,              // Scale to fit container
-                modelPosition: [0, -3, 0],
-                animationSpeed: 0.8,
-                ambientIntensity: 0.9,
-                directionalIntensity: 1.0,
-                floatAmplitude: 0,
-                floatSpeed: 0
+                modelPath: 'models/document_ring_binder.glb',  // Document represents complex contracts
+                cameraDistance: 6,
+                cameraSpeed: 0.00015,
+                modelRotation: 0.0002,
+                modelScale: 2.8,
+                modelPosition: [0, 0, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.7,
+                directionalIntensity: 0.9,
+                floatAmplitude: 0.3,
+                floatSpeed: 0.5,
+                pageFlutter: true  // NEW: Subtle page movement
             },
             edge: {
                 containerId: 'moat-canvas',
-                modelPath: 'public/3d/industrial_buildings_set_-_low_poly_models.glb',
-                cameraDistance: 40,           // Building set needs wider view
-                cameraSpeed: 0.0003,
-                modelRotation: 0.0005,
-                modelScale: 0.5,
-                modelPosition: [0, -4, 0],
+                modelPath: 'models/server_racking_system.glb',  // Server represents secure infrastructure
+                cameraDistance: 7,
+                cameraSpeed: 0.0002,
+                modelRotation: 0.0003,
+                modelScale: 2.5,
+                modelPosition: [0, 0, 0],
                 animationSpeed: 1.0,
-                ambientIntensity: 0.95,
-                directionalIntensity: 1.1,
-                floatAmplitude: 0,
-                floatSpeed: 0
+                ambientIntensity: 0.6,
+                directionalIntensity: 0.8,
+                floatAmplitude: 0.15,
+                floatSpeed: 0.3,
+                breathingEffect: true  // NEW: Breathing light effect
             },
             process: {
                 containerId: 'process-canvas',
@@ -2703,7 +2710,8 @@
                 ambientIntensity: 0.4,
                 directionalIntensity: 0.6,
                 floatAmplitude: 0.3,
-                floatSpeed: 0.5
+                floatSpeed: 0.5,
+                scrollReveal: true  // NEW: Reveal on scroll
             },
             legislative: {
                 containerId: 'legislative-canvas',
@@ -2717,7 +2725,8 @@
                 ambientIntensity: 0.5,
                 directionalIntensity: 0.7,
                 floatAmplitude: 0.2,
-                floatSpeed: 0.4
+                floatSpeed: 0.4,
+                parallaxDepth: 0.3  // NEW: Scroll parallax
             },
             caseStudy: {
                 containerId: 'case-study-canvas',
@@ -2731,7 +2740,8 @@
                 ambientIntensity: 0.3,
                 directionalIntensity: 0.5,
                 floatAmplitude: 0.4,
-                floatSpeed: 0.6
+                floatSpeed: 0.6,
+                scrollIntensity: true  // NEW: Intensity changes on scroll
             },
             pricing: {
                 containerId: 'pricing-canvas',
@@ -2745,7 +2755,23 @@
                 ambientIntensity: 0.4,
                 directionalIntensity: 0.6,
                 floatAmplitude: 0.25,
-                floatSpeed: 0.3
+                floatSpeed: 0.3,
+                waveMotion: true  // NEW: Gentle wave motion
+            },
+            trust: {
+                containerId: 'trust-canvas',
+                modelPath: 'models/quantum_knot.glb',
+                cameraDistance: 9,
+                cameraSpeed: 0.0004,
+                modelRotation: 0.0008,
+                modelScale: 1.5,
+                modelPosition: [-3, 1, 0],  // Offset positioning
+                animationSpeed: 1.0,
+                ambientIntensity: 0.3,
+                directionalIntensity: 0.4,
+                floatAmplitude: 0.6,
+                floatSpeed: 1.2,
+                orbitalMotion: true  // NEW: Orbital path
             }
         };
 
@@ -2767,6 +2793,14 @@
                 this.animationId = null;
                 this.cameraAngle = 0;
                 this.floatOffset = Math.random() * Math.PI * 2;
+
+                // Advanced animation properties
+                this.mouse = { x: 0, y: 0 };
+                this.scrollProgress = 0;
+                this.glowIntensity = 0;
+                this.orbitalAngle = 0;
+                this.wavePhase = 0;
+                this.lights = {};  // Store lights for dynamic control
 
                 this.init();
             }
@@ -2802,8 +2836,47 @@
                 this.setupVisibilityHandler();
                 this.setupResizeHandler();
 
+                // Setup advanced interactions
+                if (this.config.enableMouseParallax) {
+                    this.setupMouseTracking();
+                }
+                if (this.config.scrollReveal || this.config.scrollIntensity || this.config.parallaxDepth) {
+                    this.setupScrollTracking();
+                }
+
                 // Start animation
                 this.animate();
+            }
+
+            setupMouseTracking() {
+                // Mouse parallax effect
+                window.addEventListener('mousemove', (e) => {
+                    if (!this.isVisible) return;
+                    const x = (e.clientX / window.innerWidth) * 2 - 1;
+                    const y = -(e.clientY / window.innerHeight) * 2 + 1;
+                    this.mouse.x = x * 0.3;  // Dampen movement
+                    this.mouse.y = y * 0.3;
+                });
+            }
+
+            setupScrollTracking() {
+                // Track scroll position relative to this container
+                const updateScroll = () => {
+                    if (!this.container) return;
+                    const rect = this.container.getBoundingClientRect();
+                    const windowHeight = window.innerHeight;
+
+                    // Calculate scroll progress (0 = top of viewport, 1 = bottom of viewport)
+                    const scrollTop = -rect.top;
+                    const scrollBottom = scrollTop + windowHeight;
+                    const elementHeight = rect.height;
+
+                    // Normalize to 0-1 range
+                    this.scrollProgress = Math.max(0, Math.min(1, scrollTop / (elementHeight + windowHeight)));
+                };
+
+                window.addEventListener('scroll', updateScroll, { passive: true });
+                updateScroll();  // Initial call
             }
 
             addLighting() {
@@ -2846,6 +2919,7 @@
                     );
                     hemiLight.position.set(0, 20, 0);
                     this.scene.add(hemiLight);
+                    this.lights.hemi = hemiLight;
 
                     // Directional light
                     const dirLight = new THREE.DirectionalLight(
@@ -2855,11 +2929,21 @@
                     dirLight.position.set(5, 5, 5);
                     dirLight.castShadow = false;
                     this.scene.add(dirLight);
+                    this.lights.directional = dirLight;
 
                     // Additional fill light
                     const fillLight = new THREE.DirectionalLight(0xf0a500, 0.3);
                     fillLight.position.set(-5, 0, -5);
                     this.scene.add(fillLight);
+                    this.lights.fill = fillLight;
+
+                    // Add glow light if needed (for glow pulse effect)
+                    if (this.config.glowPulse) {
+                        const glowLight = new THREE.PointLight(0xf0a500, 0, 10);
+                        glowLight.position.set(0, 0, 2);
+                        this.scene.add(glowLight);
+                        this.lights.glow = glowLight;
+                    }
                 }
             }
 
@@ -3287,9 +3371,21 @@
                     (entries) => {
                         entries.forEach(entry => {
                             this.isVisible = entry.isIntersecting;
+
+                            // Performance optimization: Reduce render quality when not focused
+                            if (this.renderer) {
+                                if (entry.isIntersecting) {
+                                    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                                } else {
+                                    this.renderer.setPixelRatio(1);  // Lower quality when off-screen
+                                }
+                            }
                         });
                     },
-                    { threshold: 0.1 }
+                    {
+                        threshold: 0.1,
+                        rootMargin: '100px'  // Start loading 100px before entering viewport
+                    }
                 );
                 observer.observe(this.container);
             }
@@ -3327,17 +3423,97 @@
 
                 // Animate model
                 if (this.model) {
-                    // Camera orbit
-                    this.cameraAngle += this.config.cameraSpeed;
-                    this.camera.position.x = Math.sin(this.cameraAngle) * this.config.cameraDistance * 0.3;
-                    this.camera.position.z = this.config.cameraDistance + Math.cos(this.cameraAngle) * 0.5;
-                    this.camera.lookAt(0, 0, 0);
+                    // === ADVANCED ANIMATION EFFECTS ===
 
-                    // Model rotation
-                    this.model.rotation.y += this.config.modelRotation;
+                    // Mouse Parallax Effect (Hero)
+                    if (this.config.enableMouseParallax) {
+                        this.model.rotation.y += this.mouse.x * 0.02;
+                        this.model.rotation.x += this.mouse.y * 0.01;
+                        this.camera.position.x += this.mouse.x * 2;
+                        this.camera.position.y += this.mouse.y * 1.5;
+                    }
 
-                    // Floating motion
-                    this.model.position.y = Math.sin(time * this.config.floatSpeed + this.floatOffset) * this.config.floatAmplitude;
+                    // Orbital Motion (Trust section)
+                    if (this.config.orbitalMotion) {
+                        this.orbitalAngle += 0.0015;
+                        const radius = 2;
+                        this.model.position.x = this.config.modelPosition[0] + Math.cos(this.orbitalAngle) * radius;
+                        this.model.position.z = this.config.modelPosition[2] + Math.sin(this.orbitalAngle) * radius;
+                    }
+
+                    // Wave Motion (Pricing)
+                    if (this.config.waveMotion) {
+                        this.wavePhase += 0.02;
+                        this.model.rotation.z = Math.sin(this.wavePhase) * 0.1;
+                        this.model.position.y = Math.sin(this.wavePhase * 0.5) * this.config.floatAmplitude;
+                    }
+
+                    // Scroll-based Parallax (Legislative)
+                    if (this.config.parallaxDepth) {
+                        const parallaxY = this.scrollProgress * this.config.parallaxDepth * 5;
+                        this.model.position.y = parallaxY;
+                        this.camera.position.y = -parallaxY * 0.5;
+                    }
+
+                    // Scroll Reveal (Vectors) - Fade in as you scroll
+                    if (this.config.scrollReveal && this.model.traverse) {
+                        const opacity = Math.min(1, this.scrollProgress * 2);
+                        this.model.traverse(child => {
+                            if (child.material && child.material.opacity !== undefined) {
+                                child.material.opacity = opacity;
+                                child.material.transparent = true;
+                            }
+                        });
+                    }
+
+                    // Scroll Intensity (Case Study) - Spin faster on scroll
+                    if (this.config.scrollIntensity) {
+                        const intensityMult = 1 + this.scrollProgress * 2;
+                        this.model.rotation.y += this.config.modelRotation * intensityMult;
+                    }
+
+                    // Standard camera orbit
+                    if (!this.config.enableMouseParallax) {
+                        this.cameraAngle += this.config.cameraSpeed;
+                        this.camera.position.x = Math.sin(this.cameraAngle) * this.config.cameraDistance * 0.3;
+                        this.camera.position.z = this.config.cameraDistance + Math.cos(this.cameraAngle) * 0.5;
+                        this.camera.lookAt(0, 0, 0);
+                    } else {
+                        // Smooth camera follow for mouse parallax
+                        const targetX = this.mouse.x * 2;
+                        const targetY = this.mouse.y * 1.5;
+                        this.camera.position.x += (targetX - this.camera.position.x) * 0.05;
+                        this.camera.position.y += (targetY - this.camera.position.y) * 0.05;
+                        this.camera.lookAt(this.model.position);
+                    }
+
+                    // Standard model rotation (if not using special effects)
+                    if (!this.config.enableMouseParallax && !this.config.scrollIntensity) {
+                        this.model.rotation.y += this.config.modelRotation;
+                    }
+
+                    // Standard floating motion (if not using wave or orbital)
+                    if (!this.config.waveMotion && !this.config.orbitalMotion && !this.config.parallaxDepth) {
+                        this.model.position.y = Math.sin(time * this.config.floatSpeed + this.floatOffset) * this.config.floatAmplitude;
+                    }
+
+                    // === LIGHTING EFFECTS ===
+
+                    // Glow Pulse (Hero)
+                    if (this.config.glowPulse && this.lights.glow) {
+                        this.glowIntensity = 0.5 + Math.sin(time * 1.5) * 0.5;
+                        this.lights.glow.intensity = this.glowIntensity * 2;
+                        this.lights.glow.distance = 10 + this.glowIntensity * 5;
+                    }
+
+                    // Breathing Effect (Edge/Moat)
+                    if (this.config.breathingEffect && this.lights.directional) {
+                        const breathe = 0.6 + Math.sin(time * 0.5) * 0.4;
+                        this.lights.directional.intensity = this.config.directionalIntensity * breathe;
+                        if (this.lights.fill) {
+                            this.lights.fill.intensity = 0.3 * breathe;
+                        }
+                    }
 
                     // Animate fallback scenes
                     this.animateFallbackElements(time);

@@ -946,6 +946,8 @@
         /* Risk Vectors Section */
         .vectors {
             background: var(--black);
+            position: relative;
+            overflow: hidden;
         }
 
         .vectors-grid {
@@ -1008,6 +1010,8 @@
         /* Legislative Section */
         .legislative {
             background: var(--black-light);
+            position: relative;
+            overflow: hidden;
         }
 
         .legislative-content {
@@ -1117,6 +1121,7 @@
         .case-study {
             background: var(--black);
             position: relative;
+            overflow: hidden;
         }
 
         .case-study-card {
@@ -1263,6 +1268,8 @@
         /* Pricing Section */
         .pricing {
             background: var(--black-light);
+            position: relative;
+            overflow: hidden;
         }
 
         .pricing-grid {
@@ -2094,14 +2101,15 @@
 
     <!-- Risk Vectors Section -->
     <section class="vectors" id="vectors">
-        <div class="section-header centered reveal">
+        <div class="section-canvas" id="vectors-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; opacity: 0.15;"></div>
+        <div class="section-header centered reveal" style="position: relative; z-index: 1;">
             <div class="section-tag">Risk Vectors</div>
             <h2 class="section-title">20+ terms scanned on every bid.</h2>
             <p class="section-description">
                 Comprehensive analysis of the contract provisions most likely to impact your bottom line.
             </p>
         </div>
-        <div class="vectors-grid reveal">
+        <div class="vectors-grid reveal" style="position: relative; z-index: 1;">
             <div class="vector-item">
                 <div class="vector-number">01</div>
                 <div class="vector-name">Liquidated Damages</div>
@@ -2207,14 +2215,15 @@
 
     <!-- Legislative Section -->
     <section class="legislative" id="legislative">
-        <div class="section-header reveal">
+        <div class="section-canvas" id="legislative-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; opacity: 0.12;"></div>
+        <div class="section-header reveal" style="position: relative; z-index: 1;">
             <div class="section-tag">2025 Updates</div>
             <h2 class="section-title">Texas legislative changes we're monitoring.</h2>
             <p class="section-description">
                 New laws effective in 2025 that directly impact construction contract enforcement and subcontractor rights.
             </p>
         </div>
-        <div class="legislative-content">
+        <div class="legislative-content" style="position: relative; z-index: 1;">
             <div class="bills-list reveal">
                 <div class="bill-card">
                     <div class="bill-number">SB 841</div>
@@ -2265,14 +2274,15 @@
 
     <!-- Case Study Section -->
     <section class="case-study" id="case-study">
-        <div class="section-header centered reveal">
+        <div class="section-canvas" id="case-study-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; opacity: 0.1;"></div>
+        <div class="section-header centered reveal" style="position: relative; z-index: 1;">
             <div class="section-tag">Real Finding</div>
             <h2 class="section-title">Caught before it cost $120,000.</h2>
             <p class="section-description">
                 Example of a scope conflict our analysis identified on a recent DFW school district project.
             </p>
         </div>
-        <div class="case-study-card reveal">
+        <div class="case-study-card reveal" style="position: relative; z-index: 1;">
             <div class="case-study-header">
                 <div class="case-study-type">
                     <span>●</span> Scope Conflict Identified
@@ -2312,14 +2322,15 @@
 
     <!-- Pricing Section -->
     <section class="pricing" id="pricing">
-        <div class="section-header centered reveal">
+        <div class="section-canvas" id="pricing-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; opacity: 0.08;"></div>
+        <div class="section-header centered reveal" style="position: relative; z-index: 1;">
             <div class="section-tag">Pricing</div>
             <h2 class="section-title">Protect your margins.</h2>
             <p class="section-description">
                 One caught clause pays for a year of service. Choose the plan that fits your bid volume.
             </p>
         </div>
-        <div class="pricing-grid">
+        <div class="pricing-grid" style="position: relative; z-index: 1;">
             <div class="pricing-card">
                 <div class="pricing-header">
                     <div class="pricing-name">Spot Check</div>
@@ -2679,6 +2690,62 @@
                 directionalIntensity: 0.8,
                 floatAmplitude: 0,
                 floatSpeed: 0
+            },
+            vectors: {
+                containerId: 'vectors-canvas',
+                modelPath: 'models/server_racking_system.glb',
+                cameraDistance: 6,
+                cameraSpeed: 0.0003,
+                modelRotation: 0.0005,
+                modelScale: 2.0,
+                modelPosition: [0, 0, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.4,
+                directionalIntensity: 0.6,
+                floatAmplitude: 0.3,
+                floatSpeed: 0.5
+            },
+            legislative: {
+                containerId: 'legislative-canvas',
+                modelPath: 'models/document_ring_binder.glb',
+                cameraDistance: 5,
+                cameraSpeed: 0.0002,
+                modelRotation: 0.0003,
+                modelScale: 2.5,
+                modelPosition: [0, 0, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.5,
+                directionalIntensity: 0.7,
+                floatAmplitude: 0.2,
+                floatSpeed: 0.4
+            },
+            caseStudy: {
+                containerId: 'case-study-canvas',
+                modelPath: 'models/quantum_knot.glb',
+                cameraDistance: 7,
+                cameraSpeed: 0.00025,
+                modelRotation: 0.0006,
+                modelScale: 2.2,
+                modelPosition: [0, 0, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.3,
+                directionalIntensity: 0.5,
+                floatAmplitude: 0.4,
+                floatSpeed: 0.6
+            },
+            pricing: {
+                containerId: 'pricing-canvas',
+                modelPath: 'models/document_ring_binder.glb',
+                cameraDistance: 6.5,
+                cameraSpeed: 0.00015,
+                modelRotation: 0.0002,
+                modelScale: 1.8,
+                modelPosition: [0, 0, 0],
+                animationSpeed: 1.0,
+                ambientIntensity: 0.4,
+                directionalIntensity: 0.6,
+                floatAmplitude: 0.25,
+                floatSpeed: 0.3
             }
         };
 
